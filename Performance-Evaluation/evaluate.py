@@ -15,6 +15,10 @@ import matplotlib.pyplot as plt
 
 EVAL_DIR = Path(__file__).resolve().parent
 ROOT_DIR = EVAL_DIR.parent
+SERIAL_DIR = ROOT_DIR / "Serial"
+OPENMP_DIR = ROOT_DIR / "OpenMP"
+MPI_DIR = ROOT_DIR / "MPI"
+CUDA_DIR = ROOT_DIR / "CUDA"
 TIME_PATTERN = re.compile(r"completed in ([0-9.]+) seconds")
 CONFIGURATIONS = [1, 2, 4, 8, 16]
 CUDA_BLOCK_SIZES = [32, 64, 128, 256, 512, 1024]
@@ -30,7 +34,16 @@ def command(args, env=None):
 
 
 def build():
-    command(["clang", "-O3", "fft_serial.c", "-o", "fft_serial", "-lm"])
+    command(
+        [
+            "clang",
+            "-O3",
+            str(SERIAL_DIR / "fft_serial.c"),
+            "-o",
+            str(SERIAL_DIR / "fft_serial"),
+            "-lm",
+        ]
+    )
     command(
         [
             "clang",
@@ -40,15 +53,32 @@ def build():
             "-I/opt/homebrew/opt/libomp/include",
             "-L/opt/homebrew/opt/libomp/lib",
             "-lomp",
-            "fft_omp.c",
+            str(OPENMP_DIR / "fft_omp.c"),
             "-o",
-            "fft_omp",
+            str(OPENMP_DIR / "fft_omp"),
             "-lm",
         ]
     )
-    command(["mpicc", "-O3", "fft_mpi.c", "-o", "fft_mpi", "-lm"])
+    command(
+        [
+            "mpicc",
+            "-O3",
+            str(MPI_DIR / "fft_mpi.c"),
+            "-o",
+            str(MPI_DIR / "fft_mpi"),
+            "-lm",
+        ]
+    )
     if shutil.which("nvcc"):
-        command(["nvcc", "-O3", "fft_cuda.cu", "-o", "fft_cuda"])
+        command(
+            [
+                "nvcc",
+                "-O3",
+                str(CUDA_DIR / "fft_cuda.cu"),
+                "-o",
+                str(CUDA_DIR / "fft_cuda"),
+            ]
+        )
 
 
 def execution_time(args, env=None):
@@ -118,7 +148,7 @@ def run_openmp():
         env = os.environ.copy()
         env["OMP_NUM_THREADS"] = str(threads)
         env["OMP_DYNAMIC"] = "FALSE"
-        results.append((threads, execution_time(["./fft_omp"], env)))
+        results.append((threads, execution_time([str(OPENMP_DIR / "fft_omp")], env)))
     folder = EVAL_DIR / "OpenMP"
     save_results(folder, "OpenMP Performance Results", "Threads", results)
     save_graphs(folder, "OpenMP", "Number of threads", results)
@@ -130,7 +160,7 @@ def run_mpi():
         (
             processes,
             execution_time(
-                ["mpirun", "--oversubscribe", "-np", str(processes), "./fft_mpi"]
+                ["mpirun", "--oversubscribe", "-np", str(processes), str(MPI_DIR / "fft_mpi")]
             ),
         )
         for processes in CONFIGURATIONS
@@ -143,7 +173,7 @@ def run_mpi():
 
 def run_cuda():
     folder = EVAL_DIR / "CUDA"
-    if not (ROOT_DIR / "fft_cuda").exists():
+    if not (CUDA_DIR / "fft_cuda").exists():
         results_file = folder / "results.txt"
         if results_file.exists():
             results = []
@@ -156,7 +186,7 @@ def run_cuda():
         return []
 
     results = [
-        (block_size, execution_time(["./fft_cuda", str(block_size)]))
+        (block_size, execution_time([str(CUDA_DIR / "fft_cuda"), str(block_size)]))
         for block_size in CUDA_BLOCK_SIZES
     ]
     save_results(folder, "CUDA Performance Results", "Block size", results)
@@ -249,7 +279,7 @@ def save_comparison(serial_time, openmp, mpi, cuda):
 
 def main():
     build()
-    serial_time = execution_time(["./fft_serial"])
+    serial_time = execution_time([str(SERIAL_DIR / "fft_serial")])
     openmp = run_openmp()
     mpi = run_mpi()
     cuda = run_cuda()
