@@ -1,0 +1,13 @@
+CUDA Performance Results
+========================
+Dataset size: 1,048,576 samples
+Each configuration was run once.
+
+Block size         Time (seconds)      Speedup
+----------------------------------------------
+32                       0.159400       1.0000
+64                       0.010400      15.3269
+128                      0.009500      16.7789
+256                      0.008900      17.9101
+512                      0.008800      18.1136
+1024                     0.008900      17.9101

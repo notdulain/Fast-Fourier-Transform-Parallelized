@@ -1,0 +1,12 @@
+OpenMP Performance Results
+==========================
+Dataset size: 1,048,576 samples
+Each configuration was run once.
+
+Threads            Time (seconds)      Speedup
+----------------------------------------------
+1                        0.067725       1.0000
+2                        0.030970       2.1868
+4                        0.028036       2.4156
+8                        0.018293       3.7022
+16                       0.019977       3.3901

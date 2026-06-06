@@ -1,0 +1,17 @@
+Comparison Results
+==================
+Dataset size: 1,048,576 samples
+
+Implementation   Best configuration     Time (seconds)    Speedup
+--------------------------------------------------------------------
+Serial           1 thread                     0.031395     1.0000
+OpenMP           8 threads                    0.018293     1.7162
+MPI              16 processes                 0.015695     2.0003
+CUDA             block size 512               0.008800     3.5676
+
+Simple Analysis
+---------------
+CUDA was the fastest implementation in this test.
+OpenMP is simple and works well on one computer, but adding more threads gives smaller improvements after a point.
+MPI can use many processes and can run across multiple computers, but communication between processes adds extra work.
+CUDA can process many FFT operations at the same time, but it requires an NVIDIA GPU.

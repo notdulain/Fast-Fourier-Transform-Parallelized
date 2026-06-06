@@ -94,7 +94,9 @@ int main() {
     double end = omp_get_wtime();
 
     double elapsed = end - start;
-    printf("FFT of %d samples completed in %.4f seconds.\n", n, elapsed);
+    printf("Implementation: OpenMP\n");
+    printf("OpenMP threads: %d\n", omp_get_max_threads());
+    printf("FFT of %d samples completed in %.6f seconds.\n", n, elapsed);
 
     /* Print first 5 magnitudes as a basic sanity check */
     printf("First 5 output magnitudes:\n");

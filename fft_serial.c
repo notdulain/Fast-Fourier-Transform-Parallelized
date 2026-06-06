@@ -82,7 +82,8 @@ int main() {
     clock_t end = clock();
 
     double elapsed = (double)(end - start) / CLOCKS_PER_SEC;
-    printf("FFT of %d samples completed in %.4f seconds.\n", n, elapsed);
+    printf("Implementation: Serial\n");
+    printf("FFT of %d samples completed in %.6f seconds.\n", n, elapsed);
 
     /* Print first 5 magnitudes as a basic sanity check */
     printf("First 5 output magnitudes:\n");

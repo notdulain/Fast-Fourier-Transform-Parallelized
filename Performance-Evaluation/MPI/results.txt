@@ -1,0 +1,12 @@
+MPI Performance Results
+=======================
+Dataset size: 1,048,576 samples
+Each configuration was run once.
+
+Processes          Time (seconds)      Speedup
+----------------------------------------------
+1                        0.045093       1.0000
+2                        0.025485       1.7694
+4                        0.020774       2.1706
+8                        0.021154       2.1317
+16                       0.015695       2.8731

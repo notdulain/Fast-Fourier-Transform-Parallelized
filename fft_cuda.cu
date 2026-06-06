@@ -67,9 +67,18 @@ __global__ void butterfly_kernel(double *real, double *imag,
     imag[u] = imag[u] + ti;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
     int n = 1 << 20;
     int log2n = 20;
+    int blockSize = 256;
+
+    if (argc > 1) {
+        blockSize = atoi(argv[1]);
+    }
+    if (blockSize <= 0 || blockSize > 1024) {
+        fprintf(stderr, "Block size must be between 1 and 1024.\n");
+        return 1;
+    }
 
     /* ---------- Host: generate signal ---------- */
     double *h_real = (double *)malloc(n * sizeof(double));
@@ -91,7 +100,6 @@ int main() {
     cudaMemcpy(d_imag, h_imag, n * sizeof(double), cudaMemcpyHostToDevice);
 
     /* ---------- Kernel launch configuration ---------- */
-    int blockSize = 256;
     int gridSize_full = (n + blockSize - 1) / blockSize;       /* for bit-reverse: n threads */
     int gridSize_half = (n / 2 + blockSize - 1) / blockSize;   /* for butterfly: n/2 threads */
 
@@ -121,7 +129,11 @@ int main() {
     cudaMemcpy(h_imag, d_imag, n * sizeof(double), cudaMemcpyDeviceToHost);
 
     /* ---------- Print results ---------- */
-    printf("FFT of %d samples completed in %.4f seconds.\n", n, milliseconds / 1000.0);
+    printf("Implementation: CUDA\n");
+    printf("CUDA block size: %d\n", blockSize);
+    printf("CUDA full grid blocks: %d\n", gridSize_full);
+    printf("CUDA butterfly grid blocks: %d\n", gridSize_half);
+    printf("FFT of %d samples completed in %.6f seconds.\n", n, milliseconds / 1000.0);
 
     printf("First 5 output magnitudes:\n");
     for (int i = 0; i < 5; i++) {

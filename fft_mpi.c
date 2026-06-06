@@ -196,7 +196,9 @@ int main(int argc, char *argv[]) {
                imag, local_n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     if (rank == 0) {
-        printf("FFT of %d samples completed in %.4f seconds.\n", n, end - start);
+        printf("Implementation: MPI\n");
+        printf("MPI processes: %d\n", size);
+        printf("FFT of %d samples completed in %.6f seconds.\n", n, end - start);
 
         printf("First 5 output magnitudes:\n");
         for (int i = 0; i < 5; i++) {
