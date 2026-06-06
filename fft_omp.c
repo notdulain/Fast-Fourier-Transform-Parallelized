@@ -100,6 +100,11 @@ int main() {
         printf("  X[%d] = %.4f\n", i, mag);
     }
 
+    /* Print the actual peaks where the signal energy lives */
+    printf("\nPeak magnitudes (where the signal is):\n");
+    printf("  X[440] = %.4f\n", sqrt(real[440]*real[440] + imag[440]*imag[440]));
+    printf("  X[880] = %.4f\n", sqrt(real[880]*real[880] + imag[880]*imag[880]));
+
     free(real);
     free(imag);
     return 0;
