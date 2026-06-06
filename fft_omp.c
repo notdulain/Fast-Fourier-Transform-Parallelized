@@ -35,42 +35,45 @@ void fft(double *real, double *imag, int n) {
     bit_reverse(real, imag, n);
 
     /*
-         * Instead of looping over groups (i) then within each group (j),
-         * we flatten it into a single loop over ALL butterfly indices.
-         * This way every iteration is independent — perfect for OpenMP.
-         *
-         * Total butterflies per pass = n/2
-         * Each butterfly index 'k' maps to:
-         *   - which group it belongs to (group_start)
-         *   - which position within that group (j)
-         */
-         int half = n / 2;
+     * Iteratively combine sub-FFTs of increasing size (len = 2, 4, 8, ... n).
+     * A radix-2 FFT needs log2(n) stages; each stage does n/2 butterflies.
+     *
+     * Within a stage, instead of looping over groups (i) then within each
+     * group (j), we flatten it into a single loop over ALL butterfly indices.
+     * Every iteration is independent — perfect for OpenMP.
+     *
+     * Each butterfly index 'k' maps to:
+     *   - which group it belongs to (group_start)
+     *   - which position within that group (j)
+     */
+    for (int len = 2; len <= n; len <<= 1) {
+        int half = len / 2;
 
-         #pragma omp parallel for schedule(static)
-         for (int k = 0; k < n / 2; k++) {
-             /* Figure out which group and position this butterfly belongs to */
-             int group_start = (k / half) * n;
-             int j = k % half;
- 
-             /* Compute twiddle factor directly from j instead of accumulating.
-              * This avoids the sequential dependency of advancing wr/wi. */
-             double angle_j = -2.0 * PI * j / n;
-             double wr = cos(angle_j);
-             double wi = sin(angle_j);
- 
-             int u = group_start + j;
-             int v = group_start + j + half;
- 
-             /* Butterfly operation — unchanged from serial */
-             double tr = wr * real[v] - wi * imag[v];
-             double ti = wr * imag[v] + wi * real[v];
- 
-             real[v] = real[u] - tr;
-             imag[v] = imag[u] - ti;
-             real[u] = real[u] + tr;
-             imag[u] = imag[u] + ti;
-         }
+        #pragma omp parallel for schedule(static)
+        for (int k = 0; k < n / 2; k++) {
+            /* Figure out which group and position this butterfly belongs to */
+            int group_start = (k / half) * len;
+            int j = k % half;
 
+            /* Compute twiddle factor directly from j instead of accumulating.
+             * This avoids the sequential dependency of advancing wr/wi. */
+            double angle_j = -2.0 * PI * j / len;
+            double wr = cos(angle_j);
+            double wi = sin(angle_j);
+
+            int u = group_start + j;
+            int v = group_start + j + half;
+
+            /* Butterfly operation — unchanged from serial */
+            double tr = wr * real[v] - wi * imag[v];
+            double ti = wr * imag[v] + wi * real[v];
+
+            real[v] = real[u] - tr;
+            imag[v] = imag[u] - ti;
+            real[u] = real[u] + tr;
+            imag[u] = imag[u] + ti;
+        }
+    }
 }
 
 int main() {
